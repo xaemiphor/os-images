@@ -48,7 +48,7 @@ source "qemu" "this" {
   cd_label         = "cidata"
   disk_compression = true
 
-  #headless         = true
+  headless         = true
   output_directory = "output-${local.reference[var.vm_base].name}"
   vm_name          = "${local.reference[var.vm_base].name}-server.img"
   shutdown_command = "echo 'packer' | sudo -S shutdown -P now"

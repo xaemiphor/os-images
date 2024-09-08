@@ -1,0 +1,54 @@
+name: packer
+
+on:
+  push:
+
+env:
+  PACKER_VERSION: "latest"
+
+jobs:
+  packer:
+    runs-on: ubuntu-latest
+    name: Run Packer
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - file: ubuntu-server
+            vm_base: noble
+          - file: ubuntu-server
+            vm_base: jammy
+          - file: ubuntu-server
+            vm_base: focal
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Setup `packer`
+        uses: hashicorp/setup-packer@main
+        id: setup
+        with:
+          version: ${{ env.PACKER_VERSION }}
+
+      - name: Install deps
+        id: prep
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get -y -qq install qemu-system-x86 qemu-utils
+          sudo chmod 666 /dev/kvm
+          sudo usermod -a -G kvm "${USER}"
+          sudo usermod -a -G libvirtd "${USER}"
+
+      - name: Run `packer init`
+        id: init
+        run: "packer init ./${{ matrix.file }}.pkr.hcl"
+
+      - name: Run `packer validate`
+        id: validate
+        run: "packer validate ./${{ matrix.file }}.pkr.hcl"
+
+      - name: Build Artifact
+        run: packer build -color=false -on-error=abort -var 'vm_base=${{ matrix.vm_base }}' ./${{ matrix.file }}.pkr.hcl
+        env:
+          PACKER_BUILD_FINGERPRINT: "run.id.${{ github.run_id }}.run.attempt.${{ github.run_attempt }}"
