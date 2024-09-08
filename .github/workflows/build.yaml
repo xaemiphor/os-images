@@ -34,11 +34,27 @@ jobs:
         id: prep
         shell: bash
         run: |
+          echo "::group::Install apt package:"
           sudo apt-get update
           sudo apt-get -y -qq install qemu-system-x86 qemu-utils
+          echo "::endgroup::"
+          echo "::group::Play with permissions"
           sudo chmod 666 /dev/kvm
           sudo usermod -a -G kvm "${USER}"
-          sudo usermod -a -G libvirtd "${USER}"
+          echo "::endgroup::"
+          echo "::group::CPU"
+          sudo lscpu
+          echo "::endgroup::"
+          echo "::group::Memory"
+          sudo free -b
+          echo "::endgroup::"
+          echo "::group::df"
+          sudo df -h
+          echo "::endgroup::"
+          echo "::group::du"
+          sudo du -h -d 1 .
+          echo "::endgroup::"
+#          sudo usermod -a -G libvirtd "${USER}"
 
       - name: Run `packer init`
         id: init
@@ -52,3 +68,17 @@ jobs:
         run: packer build -color=false -on-error=abort -var 'vm_base=${{ matrix.vm_base }}' ./${{ matrix.file }}.pkr.hcl
         env:
           PACKER_BUILD_FINGERPRINT: "run.id.${{ github.run_id }}.run.attempt.${{ github.run_attempt }}"
+
+      - name: Check outcome
+        id: final
+        shell: bash
+        run: |
+          echo "::group::df"
+          sudo df -h
+          echo "::endgroup::"
+          echo "::group::du"
+          sudo du -h -d 1 .
+          echo "::endgroup::"
+          echo "::group::find"
+          find .
+          echo "::endgroup::"
