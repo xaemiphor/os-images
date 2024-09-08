@@ -51,6 +51,9 @@ jobs:
           echo "::group::df"
           sudo df -h
           echo "::endgroup::"
+          echo "::group::pwd"
+          pwd
+          echo "::endgroup::"
           echo "::group::du"
           sudo du -h -d 1 .
           echo "::endgroup::"
@@ -75,6 +78,9 @@ jobs:
         run: |
           echo "::group::df"
           sudo df -h
+          echo "::endgroup::"
+          echo "::group::pwd"
+          pwd
           echo "::endgroup::"
           echo "::group::du"
           sudo du -h -d 1 .
