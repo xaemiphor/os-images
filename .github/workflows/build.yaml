@@ -36,7 +36,7 @@ jobs:
         run: |
           echo "::group::Install apt package:"
           sudo apt-get update
-          sudo apt-get -y -qq install qemu-system-x86 qemu-utils
+          sudo apt-get -y -qq install qemu-system-x86 qemu-utils mkisofs
           echo "::endgroup::"
           echo "::group::Play with permissions"
           sudo chmod 666 /dev/kvm
