@@ -38,6 +38,11 @@ variable "vm_base" {
   default = "noble"
 }
 
+variable "ssh_password" {
+  type = string
+  default = "password"
+}
+
 source "qemu" "this" {
   iso_checksum = "file:https://cloud-images.ubuntu.com/releases/${local.reference[var.vm_base].codename}/release/SHA256SUMS"
   iso_url      = "https://cloud-images.ubuntu.com/releases/${local.reference[var.vm_base].codename}/release/${local.reference[var.vm_base].name}-server-cloudimg-amd64.img"
@@ -51,17 +56,17 @@ source "qemu" "this" {
   headless         = true
   output_directory = "output-${local.reference[var.vm_base].name}"
   vm_name          = "${local.reference[var.vm_base].name}-server.img"
-  shutdown_command = "echo 'packer' | sudo -S shutdown -P now"
+  shutdown_command = "echo '${var.ssh_password}' | sudo -S shutdown -P now"
 
   ssh_username = "ubuntu"
-  ssh_password = "password"
+  ssh_password = "${var.ssh_password}"
 }
 
 build {
   sources = ["source.qemu.this"]
   provisioner "shell" {
     // run scripts with sudo, as the default cloud image user is unprivileged
-    execute_command = "echo 'packer' | sudo -S sh -c '{{ .Vars }} {{ .Path }}'"
+    execute_command = "echo '${var.ssh_password}' | sudo -S sh -c '{{ .Vars }} {{ .Path }}'"
     // NOTE: cleanup.sh should always be run last, as this performs post-install cleanup tasks
     scripts = [
       "scripts/install.sh",
